@@ -23,7 +23,7 @@ $this->registerJs(<<<SCRIPT
     if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
     } else {
-        url = "http://swagger.local/v1/api/swagger.json";
+        url = "/documentation.json";
     }
 
     // Pre load translate...
@@ -64,10 +64,15 @@ $this->registerJs(<<<SCRIPT
     });
 
     function addApiKeyAuthorization(){
-        var key = encodeURIComponent($('#input_apiKey')[0].value);
-        if (key && key.trim() != "") {
-            var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("api_key", key, "query");
-            window.swaggerUi.api.clientAuthorizations.add("api_key", apiKeyAuth);
+        //var key = encodeURIComponent($('#input_apiKey')[0].value);
+        var user = encodeURIComponent($('#input_user')[0].value);
+        var pass = encodeURIComponent($('#input_pass')[0].value);
+        //if (key && key.trim() != "") {
+        if(user && user.trim() != "" && pass & pass.trim() != ""){
+            //var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("api_key", key, "query");
+            var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("Authorization", "Basic " + btoa(user + ":" + pass, "header"));
+            //window.swaggerUi.api.clientAuthorizations.add("api_key", apiKeyAuth);
+            window.swaggerUi.api.clientAuthorizations.add("key", apiKeyAuth);
             log("added key " + key);
         }
     }
