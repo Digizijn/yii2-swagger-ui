@@ -3,16 +3,16 @@
 /* @var $this \yii\web\View */
 
 ?>
-<div id="header">
-    <div class="swagger-ui-wrap">
-        <a id="logo" href="http://swagger.io">swagger</a>
-        <form id="api_selector">
-            <div class="input"><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
-            <div class="input"><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
-            <div class="input"><a id="explore" href="#" data-sw-translate>Explore</a></div>
-        </form>
-    </div>
-</div>
+<!--<div id="header">-->
+<!--    <div class="swagger-ui-wrap">-->
+<!--        <a id="logo" href="http://swagger.io">swagger</a>-->
+<!--        <form id="api_selector">-->
+<!--            <div class="input"><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>-->
+<!--            <div class="input"><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>-->
+<!--            <div class="input"><a id="explore" href="#" data-sw-translate>Explore</a></div>-->
+<!--        </form>-->
+<!--    </div>-->
+<!--</div>-->
 <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
 <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
 
@@ -26,41 +26,51 @@ $this->registerJs(<<<SCRIPT
         url = "/documentation.json";
     }
 
-    // Pre load translate...
-    if (window.SwaggerTranslator) {
-        window.SwaggerTranslator.translate();
-    }
-    window.swaggerUi = new SwaggerUi({
-        url: url,
-        dom_id: "swagger-ui-container",
-        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
-        onComplete: function(swaggerApi, swaggerUi){
-            if (typeof initOAuth == "function") {
-                initOAuth({
-                    clientId: "your-client-id",
-                    clientSecret: "your-client-secret-if-required",
-                    realm: "your-realms",
-                    appName: "your-app-name",
-                    scopeSeparator: ","
+    $(function() {
+        // Pre load translate...
+        if (window.SwaggerTranslator) {
+            window.SwaggerTranslator.translate();
+        }
+        const ui = SwaggerUIBundle({
+            url: url,
+            dom_id: "#swagger-ui-container",
+            deepLinking: true,            
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout",
+            docExpansion: "none",
+            apisSorter: "alpha",
+            showRequestHeaders: false,
+            supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+            onComplete: function(swaggerApi, swaggerUi){
+                if (typeof initOAuth == "function") {
+                    initOAuth({
+                        clientId: "your-client-id",
+                        clientSecret: "your-client-secret-if-required",
+                        realm: "your-realms",
+                        appName: "your-app-name",
+                        scopeSeparator: ","
+                    });
+                }
+    
+                if (window.SwaggerTranslator) {
+                    window.SwaggerTranslator.translate();
+                }
+    
+                $('pre code').each(function(i, e) {
+                    hljs.highlightBlock(e)
                 });
+    
+                addApiKeyAuthorization();
+            },
+            onFailure: function(data) {
+                log("Unable to Load SwaggerUI");
             }
-
-            if (window.SwaggerTranslator) {
-                window.SwaggerTranslator.translate();
-            }
-
-            $('pre code').each(function(i, e) {
-                hljs.highlightBlock(e)
-            });
-
-            addApiKeyAuthorization();
-        },
-        onFailure: function(data) {
-            log("Unable to Load SwaggerUI");
-        },
-        docExpansion: "none",
-        apisSorter: "alpha",
-        showRequestHeaders: false
+        });
+        
+        window.ui = ui
     });
 
     function addApiKeyAuthorization(){
@@ -72,7 +82,7 @@ $this->registerJs(<<<SCRIPT
             //var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("api_key", key, "query");
             var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("Authorization", "Basic " + btoa(user + ":" + pass, "header"));
             //window.swaggerUi.api.clientAuthorizations.add("api_key", apiKeyAuth);
-            window.swaggerUi.api.clientAuthorizations.add("key", apiKeyAuth);
+            window.ui.api.clientAuthorizations.add("key", apiKeyAuth);
             log("added key " + key);
         }
     }
@@ -85,13 +95,14 @@ $this->registerJs(<<<SCRIPT
      $('#input_apiKey').val(apiKey);
      */
 
-    window.swaggerUi.load();
+//    window.swaggerUi.load();
 
     function log() {
         if ('console' in window) {
             console.log.apply(console, arguments);
         }
     }
+    
 SCRIPT
 );
 ?>
